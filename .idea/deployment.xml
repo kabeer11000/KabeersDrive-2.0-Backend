@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="Kabeers Apps.rf.gd" uploadOnCheckin="012979b6-9b51-4849-a80b-0e7f1dd19c23">
+    <serverData>
+      <paths name="Kabeers Apps.rf.gd">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myUploadOnCheckinName" value="Kabeers Apps.rf.gd" />
+  </component>
+</project>
