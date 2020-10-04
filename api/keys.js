@@ -16,5 +16,9 @@ module.exports = {
     auth: {
         clientId: "p6rouHTvGJJCn9OuUNTZRfuaCnwc6",
         clientSecret: "HLRnfT8Ri6Oe5kf4tiNTv1S4VGhCA"
+    },
+    dataBase: {
+        mongoURI: "mongodb://127.0.0.1:27017",
+        //mongoURI: process.env.NODE_ENV === "development" ? "mongodb://127.0.0.1:27017" : "",
     }
 };

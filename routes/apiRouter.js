@@ -9,12 +9,21 @@ const express = require("express"),
     fs = require("fs"),
     jwt = require("jsonwebtoken"),
     ftp = require("basic-ftp"),
-    driveFTPclient = new ftp.Client;
+    driveFTPclient = new ftp.Client,
+    mongo = require("mongodb"),
+    MongoClient = mongo.MongoClient;
+const {getTypeFromMime} = require("../functions/apiFunctions");
+
 driveFTPclient.ftp.verbose = true;
 driveFTPclient.access({
     ...keys.ftpDetails,
     secure: false
 });
+
+const mongoClient = MongoClient.connect(keys.dataBase.mongoURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(db => db.db("drive"));
 
 SqlClient.query = SqlClient.executeQuery;
 SqlClient.initSession({
@@ -44,7 +53,7 @@ const makeid = t => {
 const sqlQueries = {
     findAllFoldersByUser: (userName) => `SELECT * FROM folders WHERE owner = '${userName}';`,
     findOneFolderById: (folderId, userName) => `SELECT * FROM folders WHERE uniqueId = '${folderId}' AND owner = '${userName}' LIMIT 1`,
-    findUserById: (username, password) => `SELECT * FROM users WHERE username = '${username}' AND password = '${password}' LIMIT 1`
+    findUserByCred: (username, password) => `SELECT * FROM users WHERE username = '${username}' AND password = '${password}' LIMIT 1`
 };
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -53,7 +62,7 @@ router.get('/', function (req, res, next) {
         .catch((v) => res.json(v));
 });
 router.get('/old_account_login', (req, res, next) => {
-    SqlClient.query(sqlQueries.findAllFoldersByUser("bugs"))
+    SqlClient.query(sqlQueries.findUserByCred("bugs", "bugs"))
         .then((v) => res.json(v))
         .catch((v) => res.json(v));
 });
@@ -72,7 +81,7 @@ router.get("/redirect", (req, res) => {
 
 
 const uploadToRemote = async (file) => bufferToStream(file.data)
-    .then(async fileBuffer => (await driveFTPclient, file.name = `${makeid(20)}${file.name}`, driveFTPclient.uploadFrom(fileBuffer, `${keys.ftpDir}/${makeid(30)}${"." + file.name.substring(file.name.lastIndexOf('.') + 1, file.name.length) || file.name}`, {}).catch(e => console.log(e))))
+    .then(async fileBuffer => (await driveFTPclient, file.uploadId = makeid(20), file.uploadPath = `${file.uploadId}${"." + file.name.substring(file.name.lastIndexOf('.') + 1, file.name.length) || file.name}`, file.name = `${file.uploadId}${file.name}`, driveFTPclient.uploadFrom(fileBuffer, `${keys.ftpDir}/${file.uploadPath}`, {}).catch(e => console.log(e))))
     .then((status) => ({
         ...file,
         ...status,
@@ -81,13 +90,33 @@ const uploadToRemote = async (file) => bufferToStream(file.data)
     })).catch(e => console.log(e));
 
 router.get("/file", (req, res) => {
-    res.send(`<form action='/api/upload' method='post' encType="multipart/form-data"><input type="file" name="sampleFile"/><input type='submit' value='Upload!'/></form>`);
+    res.send(`<form action='/api/upload' method='post' encType="multipart/form-data"><input type="file" multiple name="sampleFile"/><input type='submit' value='Upload!'/></form>`);
 });
 router.post("/upload", (req, res) => {
-    jwt.verify(req.headers.authorization.split(" ")[1], keys.auth.clientSecret, {}, function (err, decoded) {
-        if (err || !decoded) return res.status(400).json(err);
+    uploadToRemote(req.files.sampleFile[0]).then(value => res.json(value)).catch(e => res.json(e))
+});
+router.post("/upload_____", (req, res) => {
+    const
+        parentDir = req.query.parentDir,
+        fileShared = !!req.query.shared;
+    jwt.verify(req.headers.authorization.split(" ")[1], keys.auth.clientSecret, {}, (err, decoded) => {
+        if (err || !decoded) return res.status(400).json("Token Error");
+        req.files["driveUploads"].map((file, index) => {
+            mongoClient.then(db => uploadToRemote(file).then(fileInfo => db.collection("files").findOne({
+                    mime: fileInfo.mimetype,
+                    type: getTypeFromMime(fileInfo.mimetype),
+                    name: fileInfo.name,
+                    parentDir: parentDir || decoded.userId,
+                    id: `${makeid(10)}`,
+                    fileShared: fileShared,
+                    userId: decoded.userId,
+                    path: fileInfo.uploadPath
+                },
+                {upsert: true})))
+                .then(() => res.status(200).json("Uploaded"))
+                .catch(e => res.status(500).json("Db Connection Error"))
+        })
     });
-    uploadToRemote(req.files.sampleFile).then(value => res.json(value)).catch(e => res.json(e));
 });
 module.exports = router;
 
