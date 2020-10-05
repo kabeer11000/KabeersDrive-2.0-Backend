@@ -2,9 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d5a10cc3-b969-4519-b897-c2dfe35f72cc" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/webServers.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api/endPoints.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/functions/authFunctions.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/functions/misc.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/authRouter.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/keys.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/keys.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/functions/apiFunctions.js" beforeDir="false" afterPath="$PROJECT_DIR$/functions/apiFunctions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/apiRouter.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/apiRouter.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,7 +95,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1601803423313</updated>
-      <workItem from="1601803428039" duration="21100000" />
+      <workItem from="1601803428039" duration="25229000" />
+      <workItem from="1601910675855" duration="12137000" />
     </task>
     <task id="LOCAL-00001" summary="Everything is fine joe!">
       <created>1601847161689</created>
@@ -103,7 +112,14 @@
       <option name="project" value="LOCAL" />
       <updated>1601851056008</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Everything is fine joe!">
+      <created>1601851137650</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1601851137650</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -134,22 +150,22 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="308" y="0" key="CommitChangelistDialog2/0.0.1366.728@0.0.1366.728" timestamp="1601851135986" />
-    <state width="1323" height="179" key="GridCell.Tab.0.bottom" timestamp="1601851058262">
+    <state width="1323" height="179" key="GridCell.Tab.0.bottom" timestamp="1601924620463">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="179" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1601851058262" />
-    <state width="1323" height="179" key="GridCell.Tab.0.center" timestamp="1601851058262">
+    <state width="1323" height="179" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1601924620463" />
+    <state width="1323" height="179" key="GridCell.Tab.0.center" timestamp="1601924620463">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="179" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1601851058262" />
-    <state width="1323" height="179" key="GridCell.Tab.0.left" timestamp="1601851058261">
+    <state width="1323" height="179" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1601924620463" />
+    <state width="1323" height="179" key="GridCell.Tab.0.left" timestamp="1601924620463">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="179" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1601851058261" />
-    <state width="1323" height="179" key="GridCell.Tab.0.right" timestamp="1601851058262">
+    <state width="1323" height="179" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1601924620463" />
+    <state width="1323" height="179" key="GridCell.Tab.0.right" timestamp="1601924620463">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1323" height="179" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1601851058262" />
+    <state width="1323" height="179" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1601924620463" />
     <state x="517" y="287" key="NewPhpFileDialog" timestamp="1601806089736">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -158,6 +174,14 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="275" y="97" key="Vcs.Push.Dialog.v2/0.0.1366.728@0.0.1366.728" timestamp="1601851092874" />
+    <state x="379" y="188" key="com.intellij.ide.util.TipDialog" timestamp="1601910694842">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="379" y="188" key="com.intellij.ide.util.TipDialog/0.0.1366.728@0.0.1366.728" timestamp="1601910694842" />
+    <state x="492" y="281" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1601917024940">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="492" y="281" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1366.728@0.0.1366.728" timestamp="1601917024940" />
     <state x="346" y="49" width="672" height="678" key="search.everywhere.popup" timestamp="1601842848144">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
