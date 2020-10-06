@@ -58,8 +58,7 @@ const getUserData = async (req, res, next) => {
             "Content-Type": "application/x-www-form-urlencoded"
         }
     })
-        .then(data => apiFunc.createNewMyDrive(data.data)) // Create New MyDrive New or Returning Handle Karlaiga
-        .then(data => res.status(200).json(data.data))
+        .then(data => (apiFunc.createNewMyDrive(data.data), res.status(200).json(data.data)))// Create New MyDrive New or Returning Handle Karlaiga
         .catch(e => res.status(400).json(e.message));
 };
 const OauthRefreshToken = (req, res, next) => {
@@ -95,8 +94,9 @@ const OauthRedirect = (req, res, next) => {
         callback: encodeURI(endPoints.callbackURI)
     };
     req.session.state = makeid(10);
-    res.redirect(`https://kabeers-auth.herokuapp.com/auth/authorize?client_id=${info.clientId}&scope=${info.scopes}&response_type=code&redirect_uri=${info.callback}&state=${req.session.state}&nonce=${makeid(5)}&prompt=chooser`);
+    res.redirect(`https://kabeers-auth.herokuapp.com/auth/authorize?client_id=${info.clientId}&scope=${info.scopes}&response_type=code&redirect_uri=${info.callback}&state=${req.session.state}&nonce=${makeid(5)}&prompt=none`);
 };
+
 module.exports = {
     OauthCallbackHandler,
     getUserData,

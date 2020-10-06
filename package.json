@@ -19,6 +19,8 @@
     "fuse.js": "^6.4.1",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.2",
+    "mongoose": "^5.10.8",
+    "mongoose-mpath": "^2.3.0",
     "morgan": "~1.9.1",
     "mssql": "^6.2.3",
     "my-query-builder": "^1.1.0",
