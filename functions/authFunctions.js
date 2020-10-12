@@ -8,7 +8,19 @@ const apiFunc = require("./apiFunctions");
 const OauthAPIIds = {
     kabeersDrive: "p6rouHTvGJJCn9OuUNTZRfuaCnwc6",
     kabeersAuth: "AStroWorld_Cn9OuUNTZRfuaCnwc6",
-    scopes: ["AStroWorld_Cn9OuUNTZRfuaCnwc6:account_image", "AStroWorld_Cn9OuUNTZRfuaCnwc6:username", "AStroWorld_Cn9OuUNTZRfuaCnwc6:email", "AStroWorld_Cn9OuUNTZRfuaCnwc6:user_id", "p6rouHTvGJJCn9OuUNTZRfuaCnwc6:files", "p6rouHTvGJJCn9OuUNTZRfuaCnwc6:folder", "p6rouHTvGJJCn9OuUNTZRfuaCnwc6:email", "p6rouHTvGJJCn9OuUNTZRfuaCnwc6:username", "p6rouHTvGJJCn9OuUNTZRfuaCnwc6:upload"].join("|"),
+    scopes: [
+        "AStroWorld_Cn9OuUNTZRfuaCnwc6:account_image",
+        "AStroWorld_Cn9OuUNTZRfuaCnwc6:username",
+        "AStroWorld_Cn9OuUNTZRfuaCnwc6:email",
+        "AStroWorld_Cn9OuUNTZRfuaCnwc6:user_id",
+        "p6rouHTvGJJCn9OuUNTZRfuaCnwc6:files.readwrite",
+        "p6rouHTvGJJCn9OuUNTZRfuaCnwc6:folder.readwrite",
+        "p6rouHTvGJJCn9OuUNTZRfuaCnwc6:files",
+        "p6rouHTvGJJCn9OuUNTZRfuaCnwc6:folder",
+        "p6rouHTvGJJCn9OuUNTZRfuaCnwc6:email",
+        "p6rouHTvGJJCn9OuUNTZRfuaCnwc6:username",
+        "p6rouHTvGJJCn9OuUNTZRfuaCnwc6:upload"
+    ].join("|"),
 };
 
 const OauthCallbackHandler = async (req, res, next) => {
@@ -94,7 +106,7 @@ const OauthRedirect = (req, res, next) => {
         callback: encodeURI(endPoints.callbackURI)
     };
     req.session.state = makeid(10);
-    res.redirect(`https://kabeers-auth.herokuapp.com/auth/authorize?client_id=${info.clientId}&scope=${info.scopes}&response_type=code&redirect_uri=${info.callback}&state=${req.session.state}&nonce=${makeid(5)}&prompt=none`);
+    res.redirect(`https://kabeers-auth.herokuapp.com/auth/authorize?client_id=${info.clientId}&scope=${info.scopes}&response_type=code&redirect_uri=${info.callback}&state=${req.session.state}&nonce=${makeid(10)}&prompt=chooser`);
 };
 
 module.exports = {

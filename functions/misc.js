@@ -10,6 +10,7 @@ const bufferToStream = async (binary) => new Readable({
         this.push(null);
     }
 });
+const isArray = (obj) => !!obj && obj.constructor === Array;
 
 const getTypeFromMime = (mime) => {
     const MimeDictionary = {
@@ -68,7 +69,32 @@ const getTypeFromMime = (mime) => {
             return null;
     }
 };
-
+const icons = {
+    video: `https://cdn.jsdelivr.net/gh/kabeer11000/docs-hosted@main/drive/api/icons/movie.svg`,
+    document: `https://cdn.jsdelivr.net/gh/kabeer11000/docs-hosted@main/drive/api/icons/document.svg`,
+    code: `https://cdn.jsdelivr.net/gh/kabeer11000/docs-hosted@main/drive/api/icons/code.svg`,
+    pdf: `https://cdn.jsdelivr.net/gh/kabeer11000/docs-hosted@main/drive/api/icons/picture_as_pdf.svg`,
+    text: `https://cdn.jsdelivr.net/gh/kabeer11000/docs-hosted@main/drive/api/icons/subject-24px.svg`,
+    broken: `https://cdn.jsdelivr.net/gh/kabeer11000/docs-hosted@main/drive/api/icons/broken_image-24px.svg`,
+};
+const getThumbnailFromType = (file) => {
+    switch (file.type) {
+        case "image":
+            return `http://drive.hosted-kabeersnetwork.unaux.com/docs-userfiles/${file.uploadPath}`;
+        case "video":
+            return icons.video;
+        case "code":
+            return icons.code;
+        case "document":
+            return icons.document;
+        case "text":
+            return icons.text;
+        case "pdf":
+            return icons.pdf;
+        default:
+            return icons.broken;
+    }
+};
 module.exports = {
     makeid: t => {
         let o = "";
@@ -83,5 +109,6 @@ module.exports = {
 
     bufferToStream,
     getTypeFromMime,
-
+    getThumbnailFromType,
+    isArray,
 };

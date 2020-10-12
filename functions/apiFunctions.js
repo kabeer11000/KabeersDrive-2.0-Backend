@@ -3,23 +3,63 @@ const MongoClient = require("mongodb").MongoClient;
 const jwt = require("jsonwebtoken");
 const ftp = require("basic-ftp");
 const {makeid, getTypeFromMime, bufferToStream} = require("./misc");
+const Client = require('@icetee/ftp');
+const driveFTPClient2 = new Client();
+//const driveFTPclient = new ftp.Client();
+const util = require("util");
+const {isArray} = require("./misc");
+const {getThumbnailFromType} = require("./misc");
 
-const driveFTPclient = new ftp.Client().access({
-    ...keys.ftpDetails,
-    secure: false
-});
+
 const mongoClient = MongoClient.connect(keys.dataBase.mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(db => db.db("drive"));
 
+// driveFTPclient.ftp.verbose = true;
+// driveFTPclient.access({
+//     ...keys.ftpDetails,
+//     secure: false
+// }).catch(e => console.log(e));
+/*
+const uploadToRemote = (file) => bufferToStream(file.data)
+    .then(fileBuffer => driveFTPclient.appendFrom(fileBuffer,
+        `${keys.ftpDir}/css/${file.uploadPath}`,
+        {}).catch(e => console.log(e)))
+    .then((status) => ({
+        ...file,
+        ...status,
+        message: "uploaded",
+        data: null,
+    })).catch(e => null);
 
+*/
+
+const uploadToRemote = (file) => new Promise((resolve, reject) => {
+    try {
+        driveFTPClient2.connect({
+            ...keys.ftpDetails,
+        });
+        driveFTPClient2.put(file.data, `${keys.ftp.servers.driveHosted.ftpDir}/${file.uploadPath}`, (err) => {
+            if (err) return reject(err);
+            driveFTPClient2.end();
+            driveFTPClient2.destroy();
+
+            resolve({
+                done: true
+            });
+        });
+    } catch (err) {
+        reject(err);
+    }
+});
 const createNewMyDrive = async (user, res = null, req = null) => mongoClient.then(db => db.collection("folders").insertOne({
     itemType: "folder",
     isRoot: true,
     id: user.user_id,
     lastUpdated: Date.now(),
     owner: `${user.user_id}`,
+    immediateParent: null,
     parents: [],
     metaData: {
         name: "My Drive",
@@ -27,82 +67,92 @@ const createNewMyDrive = async (user, res = null, req = null) => mongoClient.the
     }
 }).then((r) => res.json(r)));
 
-
-const uploadToRemote = async (file) => bufferToStream(file.data)
-    .then(async fileBuffer => (await driveFTPclient, driveFTPclient.uploadFrom(fileBuffer, `${keys.ftpDir}/${file.uploadPath}`, {}).catch(e => console.log(e))))
-    .then((status) => ({
-        ...file,
-        ...status,
-        message: "uploaded",
-        data: null,
-    })).catch(e => console.log(e));
-
 const handleFileUpload = async (req, res, next) => {
+    if (!req.files || !req.files.driveUploads) return res.status(400).json("invalid Params");
     jwt.verify(req.headers.authorization.split(" ")[1], keys.auth.backend.client_secret, {}, (err, decoded) => {
         if (err) return res.status(400).json(err.message);
         const
             parentDir = req.params.parentDir ? req.params.parentDir : decoded.user_id,
             fileShared = !!req.query.shared,
-            required_prems = [`${keys.auth.backend.client_public}:upload`],
-            decoded_grantTypes = decoded.grant_types.split("|");
+            required_perms = [`${keys.auth.backend.client_public}:upload`],
+            decoded_grantTypes = decoded.grant_types.split("|"),
+            databaseFiles = [];
 
-        if (!required_prems.every(i => decoded_grantTypes.includes(i))) return res.status(400).json("Invalid Token Scope");
+        if (!required_perms.every(i => decoded_grantTypes.includes(i))) return res.status(400).json("Invalid Token Scope");
         mongoClient.then(db => db.collection("folders").findOne({
             id: parentDir,
             owner: decoded.user_id,
-        }).then(async parentFolder => {
-            const filesArray = [];
-            req.files["driveUploads"].map(file => {
-                file.uploadId = makeid(20);
+        }).then(parentFolder => {
+            /// Is Array Check Single aur Multiple Uploads Kay Liay Hai
+            (isArray(req.files.driveUploads) ? req.files.driveUploads : [req.files.driveUploads]).map(async file => {
+                file.uploadId = makeid(30);
+                file.type = getTypeFromMime(file.mimetype);
                 file.uploadPath = `${file.uploadId}${"." + file.name.substring(file.name.lastIndexOf('.') + 1, file.name.length) || file.name}`;
-                uploadToRemote(file).then(() => filesArray.push({
-                    mime: file.mimetype,
-                    type: getTypeFromMime(file.mimetype),
-                    name: file.name,
-                    parentDir: parentDir,
-                    id: `${makeid(10)}`,
-                    fileShared: fileShared,
-                    userId: decoded.user_id,
-                    path: file.uploadPath,
-                    parents: [...parentFolder.parents, parentFolder.id]
-                }));
+                await uploadToRemote(file)
+                    .then(databaseFiles.push({
+                        thumbnail: getThumbnailFromType(file),
+                        mime: file.mimetype,
+                        type: file.type,
+                        name: file.name,
+                        immediateParent: parentDir,
+                        id: `${makeid(15)}`,
+                        fileShared: fileShared,
+                        owner: decoded.user_id,
+                        path: file.uploadPath,
+                        parents: [...parentFolder.parents, parentFolder.id]
+                    }))
+                    .catch(e => console.log(e));
             });
-            await db.collection("files").insertMany(filesArray)
-                .then(() => res.status(200).json({
-                    message: "inserted",
-                    ...filesArray,
-                }))
-                .catch(() => res.status(500).json("Db Connection Error"));
-        })
-            .catch(() => res.status(500).json("Db Connection Error")))
-            .catch(() => res.status(500).json("Db Connection Error"));
+            //driveFTPClient2.end();
+            //driveFTPClient2.destroy();
+            // Everything Working Bas FTP connection ki waja say Mongodb Error Day raha hai
+            db.collection("files").insertMany(databaseFiles)
+                .then(() => res.status(200).json(databaseFiles))
+                .catch(e => res.status(500).json(e))
+        })).catch(e => res.json(e));
     });
 };
 const getFolderContents = (req, res, next) => {
     jwt.verify(req.headers.authorization.split(" ")[1], keys.auth.backend.client_secret, {}, (err, decoded) => {
         if (err) return res.status(400).json(err.message);
-        const parentDir = req.params.folderId ? req.params.folderId : decoded.userId;
+        const parentDir = req.params.folderId ? req.params.folderId : decoded.user_id;
         const required_prems = [`${keys.auth.backend.client_public}:folder`];
         const decoded_grantTypes = decoded.grant_types.split("|");
         if (!required_prems.every(i => decoded_grantTypes.includes(i))) return res.status(400).json("Invalid Token Scope");
 
-        mongoClient.then(db => db.collection("folder").findOne({
+        mongoClient.then(db => db.collection("folders").findOne({
             id: parentDir,
-            owner: decoded.userId
-        }).then(folder => {
-            const contents = {
-                files: [],
-                folders: [],
-            };
-            folder.children.map(item => item.itemType === "file" ? contents.files.push(item.id) : contents.folders.push(item.id));
-            res.json({
-                type: "drive#folder",
-                files: db.collection("files").find({id: {$in: contents.files}}).toArray().catch(() => []),
-                folders: db.collection("folders").find({id: {$in: contents.folders}}).toArray().catch(() => [])
-            });
-        }).catch(() => res.json("Error Finding Folder")));
+            owner: decoded.user_id
+        }).then(async folder => folder ? await res.json({
+            ...folder,
+            type: "drive#folder",
+            files: await db.collection("files").find({
+                immediateParent: parentDir
+            }).toArray().catch(() => []),
+            folders: await db.collection("folders").find({
+                immediateParent: parentDir
+            }).toArray().catch(() => [])
+        }) : res.status(400).json({
+            message: "Not Found"
+        })).catch(() => res.json("Error Finding Folder")));
     });
 };
+/*
+                files: await db.collection("files").aggregate([
+                    { $project: { id: 1, parents: { $slice: [ "$parents", -1 ] } } },
+                    { $match: { parents: parentDir } }
+                ]).toArray().catch(() => []),
+
+
+
+await db.collection("files").aggregate([
+                    {$project: {parents: {$arrayElemAt: ["$parents", -1]}}},
+                    {$match: {parents: parentDir}}
+                ]).toArray().catch(() => [])
+
+
+{ $project: { id: 1, parents: { $arrayElemAt: [ "$parents", -1 ] } } }
+ */
 const createNewFolder = async (req, res, next) => {
     if (!req.headers.authorization || !req.body.name) return res.status(400).json("Invalid Params");
     jwt.verify(req.headers.authorization.split(" ")[1], keys.auth.backend.client_secret, {}, (err, decoded) => {
@@ -112,16 +162,16 @@ const createNewFolder = async (req, res, next) => {
         const decoded_grantTypes = decoded.grant_types.split("|");
         if (!required_perms.every(i => decoded_grantTypes.includes(i))) return res.status(400).json("Invalid Token Scope");
 
-        const currentFolderId = makeid(20);
         mongoClient.then(db => db.collection("folders").findOne({
             id: parentDir,
             owner: decoded.user_id,
         }).then(parentFolder => parentFolder ? db.collection("folders").insertOne({
             isRoot: false,
-            id: currentFolderId,
+            id: makeid(20),
             created: Date.now(),
             lastUpdated: Date.now(),
             owner: `${decoded.user_id}`,
+            immediateParent: parentDir,
             metaData: {
                 name: req.body.name,
                 isShared: true,
@@ -130,48 +180,6 @@ const createNewFolder = async (req, res, next) => {
         }) : res.status(400).json("Parent Dir Not Found")).then((r) => res.json(r.ops[0])))
     });
 };
-/* Unused Functions */
-const handleFolderSearch = async (req, res, next) => {
-    await mongoClient.then(async db => {
-        var path = [];
-        var item = await db.collection("folders").findOne({id: "wUahWq97tFq5QABglT6l"});
-        while (item.parent) {
-            item = await db.collection("folders").findOne({id: item.parent});
-            path.push(item);
-            console.log(item);
-        }
-        await res.json(path);
-    })
-};
-const getParentFromId = async (req, res, next) => {
-    await mongoClient.then(async db => {
-        db.collection("folders").createIndex({parent: 1});
-        const path = [];
-        let item = await db.collection("folders").findOne({id: "IUIhzI0N4Kh7XQEKThvi"});
-        while (item.parent) {
-            item = await db.collection("folders").findOne({id: item.parent});
-            path.push(item.id);
-        }
-        await res.json(path.reverse());
-    })
-};
-const getChildrenFromId = async (req, res, next) => {
-    await mongoClient.then(async db => {
-        const path = [];
-        let item = await db.collection("folders").findOne({id: "b4000376114184b38e2f00e43b070a9fe239457d"});
-        while (item && item.children) {
-            item = await db.collection("folders").find({
-                id: {
-                    $in: [...item.children.map(v => v.type === "folder" ? v.id : null).filter(Boolean)]
-                }
-            }).toArray();
-            path.push(item);
-        }
-        await res.json(path);
-    })
-};
-/* Unused Functions */
-
 const removeFolderById = (req, res, next) => {
     if (!req.headers.authorization || !req.body.id) return res.status(400).json("Invalid Params");
     jwt.verify(req.headers.authorization.split(" ")[1], keys.auth.backend.client_secret, {}, (err, decoded) => {
@@ -188,6 +196,27 @@ const removeFolderById = (req, res, next) => {
             message: "complete"
         })).catch((e) => res.status(500).json("Database Error")))
             .catch((e) => res.status(500).json("Database Error"))
+    });
+};
+const getAllShared = (req, res, next) => {
+    if (!req.headers.authorization || !req.params.id) return res.status(400).json("Invalid Params");
+    jwt.verify(req.headers.authorization.split(" ")[1], keys.auth.backend.client_secret, {}, (err, decoded) => {
+        if (err) return res.status(400).json(err.message);
+        const fileId = req.params.id;
+        const required_perms = [`${keys.auth.backend.client_public}:folder`];
+        const decoded_grantTypes = decoded.grant_types.split("|");
+
+        if (!required_perms.every(i => decoded_grantTypes.includes(i))) return res.status(400).json("Invalid Token Scope");
+        mongoClient.then(async db => res.json({
+            files: await db.collection("files").find({
+                owner: decoded.user_id,
+                fileShared: true
+            }).toArray().catch(e => []),
+            folders: await db.collection("folders").find({
+                owner: decoded.user_id,
+                isShared: true
+            }).toArray().catch(e => []),
+        }));
     });
 };
 const detailFunctions = {
@@ -214,7 +243,7 @@ const detailFunctions = {
         jwt.verify(req.headers.authorization.split(" ")[1], keys.auth.backend.client_secret, {}, (err, decoded) => {
             if (err) return res.status(400).json(err.message);
             const fileId = req.params.id;
-            const required_perms = [`${keys.auth.backend.client_public}:folder`];
+            const required_perms = [`${keys.auth.backend.client_public}:files.readwrite`];
             const decoded_grantTypes = decoded.grant_types.split("|");
 
             if (!required_perms.every(i => decoded_grantTypes.includes(i))) return res.status(400).json("Invalid Token Scope");
@@ -226,7 +255,47 @@ const detailFunctions = {
                 .catch(e => res.status(400).json("File Not Found")))
                 .catch(e => res.status(500).json("Database Error Occured"));
         });
-    }
+    },
+    getNRecentFiles: (req, res, next) => {
+        if (!req.headers.authorization) return res.status(400).json("Invalid Params");
+        jwt.verify(req.headers.authorization.split(" ")[1], keys.auth.backend.client_secret, {}, (err, decoded) => {
+            if (err) return res.status(400).json(err.message);
+            const required_perms = [`${keys.auth.backend.client_public}:files`];
+            const decoded_grantTypes = decoded.grant_types.split("|");
+
+            if (!required_perms.every(i => decoded_grantTypes.includes(i))) return res.status(400).json("Invalid Token Scope");
+            mongoClient.then(db => {
+                db.collection("files").find({
+                    owner: decoded.user_id,
+                }).sort({$natural: 1}).limit(req.params.num ? parseInt(req.params.num) : 10).toArray().then(files => res.status(200).json({
+                    files: files || []
+                }));
+            })
+        })
+    },
+    changeFileSharing: (req, res, next) => {
+        if (!req.headers.authorization || !req.params.id || !req.body.sharing) return res.status(400).json("Invalid Params");
+        jwt.verify(req.headers.authorization.split(" ")[1], keys.auth.backend.client_secret, {}, (err, decoded) => {
+            if (err) return res.status(400).json(err.message);
+            const fileId = req.params.id;
+            const required_perms = [`${keys.auth.backend.client_public}:files`];
+            const decoded_grantTypes = decoded.grant_types.split("|");
+            if (!required_perms.every(i => decoded_grantTypes.includes(i))) return res.status(400).json("Invalid Token Scope");
+            mongoClient.then(db => db.collection("files").findOneAndUpdate({
+                owner: decoded.user_id,
+                id: fileId
+            }, {
+                $set: {
+                    fileShared: JSON.parse(req.body.sharing)
+                },
+            })
+                .then(file => res.json(file))
+                .catch(e => res.status(400).json("File Not Found")))
+                .catch(e => res.status(500).json("Database Error Occured"));
+        });
+    },
+};
+const ConnectedAppsAddFile = (req, res, next) => {
 };
 module.exports = {
     createNewMyDrive,
@@ -234,9 +303,7 @@ module.exports = {
     handleFileUpload,
     getFolderContents,
     createNewFolder,
-    handleFolderSearch,
-    getChildrenFromId,
-    getParentFromId,
     removeFolderById,
     detailFunctions,
+    getAllShared,
 };

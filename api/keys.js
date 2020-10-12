@@ -13,6 +13,26 @@ module.exports = {
         port: 21,
     },
     ftpDir: `/drive.hosted-kabeersnetwork.unaux.com/htdocs/`,
+    ftp: {
+        servers: {
+            driveHosted: {
+                ftpDir: `/drive.hosted-kabeersnetwork.unaux.com/htdocs/docs-userfiles`,
+            },
+            xampp: {
+                ftpDir: "/htdocs/docs-drive/user-files",
+                host: "localhost",
+                username: "",
+                password: "",
+                port: 21
+            },
+            hotteenPP: {
+                ftpDir: "/public_html/docs-drive/user-files",
+                host: "files.000webhost.com",
+                username: "hotteenpp",
+                password: "uganda123"
+            }
+        }
+    },
     auth: {
         backend: {
             client_public: "p6rouHTvGJJCn9OuUNTZRfuaCnwc6",
