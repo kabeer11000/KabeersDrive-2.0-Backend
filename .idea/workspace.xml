@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="d5a10cc3-b969-4519-b897-c2dfe35f72cc" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,7 +99,7 @@
       <workItem from="1602787379841" duration="13096000" />
       <workItem from="1602895340913" duration="647000" />
       <workItem from="1602896252222" duration="15000" />
-      <workItem from="1602896557914" duration="1236000" />
+      <workItem from="1602896557914" duration="1881000" />
     </task>
     <task id="LOCAL-00001" summary="Everything is fine joe!">
       <created>1601847161689</created>
@@ -151,7 +150,14 @@
       <option name="project" value="LOCAL" />
       <updated>1602945929746</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Kafi Updates Hai">
+      <created>1602946035351</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1602946035351</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -181,10 +187,10 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="275" y="22" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1366.728@0.0.1366.728" timestamp="1601806420257" />
-    <state x="308" y="0" key="CommitChangelistDialog2" timestamp="1602945927424">
+    <state x="308" y="0" key="CommitChangelistDialog2" timestamp="1602946034225">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="308" y="0" key="CommitChangelistDialog2/0.0.1366.728@0.0.1366.728" timestamp="1602945927424" />
+    <state x="308" y="0" key="CommitChangelistDialog2/0.0.1366.728@0.0.1366.728" timestamp="1602946034225" />
     <state width="1323" height="179" key="GridCell.Tab.0.bottom" timestamp="1602945929831">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -205,10 +211,10 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="517" y="287" key="NewPhpFileDialog/0.0.1366.728@0.0.1366.728" timestamp="1601806089736" />
-    <state x="275" y="97" key="Vcs.Push.Dialog.v2" timestamp="1602469447247">
+    <state x="275" y="97" key="Vcs.Push.Dialog.v2" timestamp="1602946073193">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="275" y="97" key="Vcs.Push.Dialog.v2/0.0.1366.728@0.0.1366.728" timestamp="1602469447247" />
+    <state x="275" y="97" key="Vcs.Push.Dialog.v2/0.0.1366.728@0.0.1366.728" timestamp="1602946073193" />
     <state x="379" y="188" key="com.intellij.ide.util.TipDialog" timestamp="1602896254291">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
