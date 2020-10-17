@@ -15,6 +15,34 @@ module.exports = {
     ftpDir: `/drive.hosted-kabeersnetwork.unaux.com/htdocs/`,
     ftp: {
         servers: {
+            ultiFreeHosting: {
+                user: "ufblg_26961290",
+                password: "uganda123",
+                host: "ftpupload.net",
+            },
+            vector_kabeersnetwork: {
+                thumb: `https://vector-kabeersnetwork.000webhostapp.com/drive-hosted`,
+                host: "files.000webhost.com",
+                user: "vector-kabeersnetwork",
+                password: "uganda123",
+                ftpDir: "/public_html/drive-hosted",
+            },
+            mzHost: {
+                thumb: `http://kabeer11000.mzzhost.com`,
+                host: "ftp.mzzhost.com",
+                user: "mzzho_26961715",
+                password: "uganda12",
+                ftpDir: "/htdocs",
+            },
+            driveHQ: {
+                port: 21,
+                mainWebsiteUrl: "drivehq.com",
+                host: "kabeer11000.firstcloudit.com",
+                viewURI: `https://kabeer11000.firstcloudit.com/`,
+                ftpDir: "/wwwhome/kabeers-drive-storage/",
+                user: "kabeer11000",
+                password: "uganda123"
+            },
             driveHosted: {
                 ftpDir: `/drive.hosted-kabeersnetwork.unaux.com/htdocs/docs-userfiles`,
             },

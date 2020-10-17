@@ -1,4 +1,5 @@
 const {Readable} = require('stream');
+const keys = require("../api/keys");
 
 /**
  * @param binary Buffer
@@ -34,7 +35,11 @@ const getTypeFromMime = (mime) => {
             "text/x-php",
             "text/html",
             "text/xhtml",
-            "text/javscript"
+            "text/javascript",
+            "application/octet-stream",
+            "application/x-python-code",
+            "text/x-python",
+            "application/x-typescript"
         ],
         doc: [
             "application/vnd.ms-powerpoint",
@@ -66,7 +71,7 @@ const getTypeFromMime = (mime) => {
         case MimeDictionary.pdf.includes(mime):
             return "pdf";
         default:
-            return null;
+            return "other";
     }
 };
 const icons = {
@@ -80,7 +85,7 @@ const icons = {
 const getThumbnailFromType = (file) => {
     switch (file.type) {
         case "image":
-            return `http://drive.hosted-kabeersnetwork.unaux.com/docs-userfiles/${file.uploadPath}`;
+            return `${keys.ftp.servers.vector_kabeersnetwork.thumb}/${file.uploadPath}`;
         case "video":
             return icons.video;
         case "code":

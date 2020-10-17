@@ -4,6 +4,7 @@ const keys = require("../api/keys");
 const axios = require("axios");
 const misc = require("./misc");
 const apiFunc = require("./apiFunctions");
+const jwt = require("jsonwebtoken");
 
 const OauthAPIIds = {
     kabeersDrive: "p6rouHTvGJJCn9OuUNTZRfuaCnwc6",
@@ -23,7 +24,7 @@ const OauthAPIIds = {
     ].join("|"),
 };
 
-const OauthCallbackHandler = async (req, res, next) => {
+const OauthCallbackHandler = (req, res, next) => {
     if (!req.query.code) return res.status(302).json("Nothing Here");
     if (req.query.state !== req.session.state) return res.status(402).json("Invalid State");
     axios({
@@ -54,24 +55,28 @@ const OauthCallbackHandler = async (req, res, next) => {
             expire: "2h",
             exp: Date.now(),
             token: IdentityProviderTokens.access_token
-        }), {maxAge: 7.2e+6, httpOnly: true});
+        }), {maxAge: 7.2e+6, httpOnly: false});
         res.cookie("user_data_refresh_token", IdentityProviderTokens.refresh_token, {maxAge: 8.64e+8, httpOnly: true});
-
-        res.redirect("/");
+        // Create My Drive if Not Exist
+        jwt.verify(DriveTokens.access_token, keys.auth.backend.client_secret, {}, (err, decoded) => {
+            if (err) return res.json(err);
+            apiFunc.createNewMyDrive(decoded, req, res, next).then(() => {
+                res.redirect("/");
+            }).catch(e => res.json(e));
+        });
     }).catch(error => res.status(400).json(error.message));
 };
 const getUserData = async (req, res, next) => {
-    if (!req.cookies["user_data_token"]) return res.status(400).json("No UserData Cookie");
-    const token = JSON.parse(req.cookies["user_data_token"]).token;
+    const token = req.headers["idtoken"];
     axios.post("https://kabeers-auth.herokuapp.com/user/userinfo", misc.serialize({
         token: token
     }), {
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
         }
-    })
-        .then(data => (apiFunc.createNewMyDrive(data.data), res.status(200).json(data.data)))// Create New MyDrive New or Returning Handle Karlaiga
-        .catch(e => res.status(400).json(e.message));
+    }).then(data => {
+        res.status(200).json(data.data);
+    }).catch(e => res.status(400).json(e.message));
 };
 const OauthRefreshToken = (req, res, next) => {
     if (!req.cookies["oauth_refresh_token"]) return res.status(402).json("Refresh Token Does Not Exists");
